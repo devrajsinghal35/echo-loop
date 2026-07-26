@@ -16,8 +16,11 @@ import json
 import sys
 from pathlib import Path
 
+# pyrefly: ignore [missing-import]
 from mcp import ClientSession, StdioServerParameters
+# pyrefly: ignore [missing-import]
 from mcp.client.stdio import stdio_client
+# pyrefly: ignore [missing-import]
 import ollama
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
@@ -275,5 +278,30 @@ async def run_verification():
     return 0 if all_passed else 1
 
 
+def setup_db():
+    import sqlite3
+    db_path = PROJECT_ROOT / "telemetry.db"
+    conn = sqlite3.connect(db_path)
+    conn.execute(
+        "INSERT INTO snapshots (timestep, timestamp, is_warmup, zone_temp_c, energy_rate_w, iaq_co2_ppm, comfort_pmv) "
+        "VALUES (40, 'Day-Step 40', 0, 19.5, 1000.0, 500.0, -1.04)"
+    )
+    conn.commit()
+    conn.close()
+
+
+def teardown_db():
+    import sqlite3
+    db_path = PROJECT_ROOT / "telemetry.db"
+    conn = sqlite3.connect(db_path)
+    conn.execute("DELETE FROM snapshots WHERE timestep = 40 AND comfort_pmv = -1.04")
+    conn.commit()
+    conn.close()
+
+
 if __name__ == "__main__":
-    sys.exit(asyncio.run(run_verification()))
+    setup_db()
+    try:
+        sys.exit(asyncio.run(run_verification()))
+    finally:
+        teardown_db()
