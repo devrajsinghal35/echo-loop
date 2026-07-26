@@ -8,7 +8,7 @@ An autonomous AI agent that optimizes building HVAC energy consumption using rea
 This system runs a physics-accurate EnergyPlus simulation of a single-zone Chicago office building, streams real-time telemetry (temperature, PMV comfort, CO₂, energy) into a SQLite database, and lets an AI agent — powered by a local LLM via Ollama — make autonomous HVAC setpoint decisions every hour. Every recommendation passes through a deterministic **Control Core** that enforces hard safety constraints (setpoint gaps, PMV bounds, deadbands, cooldown timers) before any actuator is touched. The agent implements three strategies: **occupied-hours comfort-energy nudges** (small setpoint adjustments within a tight PMV buffer), **explicit night setback** (2°C setpoint relaxation during unoccupied hours), and **optimal-start pre-conditioning** (gradual morning ramp-up before occupancy). Result: **10.74% energy savings with zero occupied-hours comfort penalty**.
 
 ---
-
+video demo link - https://drive.google.com/file/d/1oNhYDnFSgZAXj1S_61CFqWTu_6BbFyl7/view?usp=sharing
 ## 🚀 Quick Start
 
 ### Prerequisites
