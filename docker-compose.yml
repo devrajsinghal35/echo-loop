@@ -1,0 +1,81 @@
+# ──────────────────────────────────────────────────────────────────────────
+# docker-compose.yml — AI-Assisted HVAC Control System
+# ──────────────────────────────────────────────────────────────────────────
+version: "3.8"
+
+services:
+  # ── Ollama LLM Server ──────────────────────────────────────────────────
+  ollama:
+    image: ollama/ollama:latest
+    container_name: hvac-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ~/.ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ── Model Puller (one-shot init) ───────────────────────────────────────
+  ollama-init:
+    image: curlimages/curl:latest
+    container_name: hvac-ollama-init
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "curl -s http://ollama:11434/api/pull -d '{\"name\": \"qwen2.5:7b-instruct\"}' && echo 'Model pulled successfully'"
+    restart: "no"
+
+  # ── Simulation + Evaluation Engine ─────────────────────────────────────
+  simulation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hvac-simulation
+    environment:
+      - ENERGYPLUS_DIR=/usr/local/EnergyPlus-24-2-0
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      ollama-init:
+        condition: service_completed_successfully
+    command: >
+      bash -c "python evaluation/engine.py && echo '✅ Evaluation complete'"
+    volumes:
+      - evaluation_data:/app/evaluation
+
+  # ── MCP Server (AI Agent) ──────────────────────────────────────────────
+  mcp-server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hvac-mcp-server
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      ollama:
+        condition: service_healthy
+    command: ["python", "agent/mcp_server/server.py"]
+    stdin_open: true
+
+  # ── Dashboard ──────────────────────────────────────────────────────────
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hvac-dashboard
+    ports:
+      - "8501:8501"
+    depends_on:
+      simulation:
+        condition: service_completed_successfully
+    command: >
+      streamlit run dashboard/app.py --server.port 8501 --server.address 0.0.0.0
+    volumes:
+      - evaluation_data:/app/evaluation
+
+volumes:
+  evaluation_data:

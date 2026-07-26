@@ -1,0 +1,24 @@
+{
+  "baseline": {
+    "total_kwh": 189.98,
+    "peak_kw": 4.67,
+    "comfort_violation_mins": 1410,
+    "comfort_violation_occupied_mins": 615,
+    "comfort_violation_unoccupied_mins": 795,
+    "interventions": {
+      "occupied_nudge": 0,
+      "unoccupied_setback": 0
+    }
+  },
+  "ai": {
+    "total_kwh": 169.58,
+    "peak_kw": 5.46,
+    "comfort_violation_mins": 1890,
+    "comfort_violation_occupied_mins": 615,
+    "comfort_violation_unoccupied_mins": 1275,
+    "interventions": {
+      "occupied_nudge": 19,
+      "unoccupied_setback": 3
+    }
+  }
+}

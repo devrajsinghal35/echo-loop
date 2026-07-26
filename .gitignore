@@ -1,0 +1,11 @@
+.venv/
+agent/mcp_server/.venv/
+.env
+*.db
+scratch_*.py
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+simulation/logs/
+temp_check_repo/
